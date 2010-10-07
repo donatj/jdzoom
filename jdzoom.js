@@ -42,7 +42,7 @@ var JDZoom = new Class({
 				jdzl.fade('hide');
 				//alert( jdzlSize.x / elmSize.x * lgimgImgSize.x );
 				var jdzm = new Element('div', {'class':'jdz_magnified', 'styles':{ 
-						'background': 'url(' + lg_href + ')',
+						'background': 'url(' + escape(lg_href) + ')',
 						'width'     : jdzlSize.x / elmSize.x * lgimg.width,
 						'height'    : jdzlSize.y / elmSize.y * lgimg.height
 				}});
@@ -82,7 +82,7 @@ var JDZoom = new Class({
 
 				//Internet Explorer Garbage
 				if( Browser.Engine.trident ) {
-					repImg.setStyles({ 'background':'url('+elm.get('src')+')' });
+					repImg.setStyles({ 'background':'url('+escape(elm.get('src'))+')' });
 					repImg.addEvent('mouseover', function(){ $$('select').fade('out');});
 					repImg.addEvent('mouseout', function(){ $$('select').fade('in'); });
 				}
