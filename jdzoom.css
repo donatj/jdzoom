@@ -1,24 +1,25 @@
 .jdz_looking_glass {
 	border: 1px solid white;
-	width: 100px;
-	height: 100px;
+	width: 20%;
+	height: 20%;
 	position: absolute;
 	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	background: rgba(255, 255, 255, 0.2);
 }
 
 .jdz_img {
-	position: relative;
+	position: absolute;
+	z-index: 50;
 }
 
 .jdz_magnified {
-
 	height: 300px;
 	width: 300px;
-	
 	position: relative;
 	right: 301px;
 	border: 1px solid #eee;
 	-moz-border-radius: 5px;
-	z-index: 1001;
+	z-index: 100;
 }
