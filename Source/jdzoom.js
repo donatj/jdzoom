@@ -1,20 +1,29 @@
-/**
-* JDZoom Image Detail Popup
-* 
-* @description Mootools/JavaScript image detail zoom window
-* @author Jesse G. Donat
-*/
+/*
+---
+description: JDZoom
 
+license: MIT-style
+
+authors:
+	- Jesse G. Donat
+
+requires:
+	- core/1.2.4:   '*'
+
+provides: 
+	- JDZoom
+...
+*/
 var JDZoom = new Class({
 
 	Implements: [Options],
-	Images: [],
+
 	options: {
 		'selector': 'a[rel=jdzoom]',
 		'classes': {
 			placeholder  : 'jdz_img',
-			looking_glass:'jdz_looking_glass',
-			magnified: 'jdz_magnified'
+			looking_glass: 'jdz_looking_glass',
+			magnified    : 'jdz_magnified'
 		},
 		'cancel_click' : true,
 		'magnified_pos': 'float'
@@ -62,6 +71,7 @@ var JDZoom = new Class({
 				
 				if( that.options.magnified_pos == 'fixed' ) {
 					jdzm.inject( repImg );
+					jdzm.fade('hide');
 				}else{
 					jdzm.inject( jdzl );
 				}
