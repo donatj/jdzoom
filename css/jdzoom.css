@@ -23,3 +23,25 @@
 	-moz-border-radius: 5px;
 	z-index: 100;
 }
+
+/* * Endless.com Style * */
+
+.jdz_looking_glass_fixed {
+	width: 30%;
+	height: 30%;
+	position: absolute;
+	background: url(images/grid.png);
+}
+
+.jdz_img_fixed {
+	position: absolute;
+	z-index: 50;
+}
+
+.jdz_magnified_fixed {
+	height: 300px;
+	width: 300px;
+	position: absolute;
+	right: 301px;
+	z-index: 100;
+}
