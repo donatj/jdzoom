@@ -30,11 +30,15 @@ var JDZoom = new Class({
 	},
 
 	initialize:  function(options) { 
-		this.setOptions(options);		
-		this.Images = $$( this.options.selector + ' img' );
+		this.setOptions(options);
+		this.Images = $$(this.options.selector);
 		var that = this;
 		
 		this.Images.each(function(elm, i){
+			
+			if( elm.get('tag') == 'a' ) {
+				elm = elm.getChildren('img')[0];
+			}
 			
 			var elmSize = $(elm).getSize();
 			var parent_a = elm.getParent('a');
