@@ -68,7 +68,7 @@ var JDZoom = new Class({
 				jdzl.fade('hide');
 
 				var jdzm = new Element('div', {'class':that.options.classes.magnified, 'styles':{ 
-						'background': 'url(' + escape(lg_href) + ')',
+						'background': 'url("' + lg_href + '")',
 						'width'     : jdzlSize.x / elmSize.x * lgimg.width,
 						'height'    : jdzlSize.y / elmSize.y * lgimg.height
 				}});
