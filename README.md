@@ -39,3 +39,6 @@ For more specific information visit [http://donatstudios.com/JDZoom][1]
 
 
   [1]: http://donatstudios.com/JDZoom
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/donatj/jdzoom/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
