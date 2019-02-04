@@ -29,16 +29,15 @@ There are no required parameters, but it will accept a single parameter object.
 
 We use the load event rather than domready to ensure images are loaded.  Causes issues in Webkit otherwise.      
 
-	#JavaScript
-	window.addEvent('load',function() { 
-		var jdz = new JDZoom();
-	});
+```js
+window.addEvent('load',function() { 
+	var jdz = new JDZoom();
+});
+```
+
+For more specific information visit [https://donatstudios.com/JDZoom][1]
 
 
-For more specific information visit [http://donatstudios.com/JDZoom][1]
+  [1]: https://donatstudios.com/JDZoom
 
-
-  [1]: http://donatstudios.com/JDZoom
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/donatj/jdzoom/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
