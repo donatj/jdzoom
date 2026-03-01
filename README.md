@@ -1,7 +1,7 @@
 JDZoom
 ======
 
-JDZoom is a small MooTools plugin that enlarges a hovered portion of an image in a small detail box.
+JDZoom is a small vanilla JavaScript plugin that enlarges a hovered portion of an image in a small detail box.
 
 How to Use
 ----------
@@ -10,7 +10,7 @@ There are no required parameters, but it will accept a single parameter object.
 
   - selector - *what to apply JDZoom on*
     - **Default**: 'a[rel=jdzoom]'
-    - **Accepts**: Selector String, Element, Array of Elements
+    - **Accepts**: Selector String
   - classes
     - placeholder - *Placeholder div which holds all the fun*
       - **Default**: 'jdz_img'
@@ -30,7 +30,7 @@ There are no required parameters, but it will accept a single parameter object.
 We use the load event rather than domready to ensure images are loaded.  Causes issues in Webkit otherwise.      
 
 ```js
-window.addEvent('load',function() { 
+window.addEventListener('load',function() { 
 	var jdz = new JDZoom();
 });
 ```

@@ -7,158 +7,173 @@ license: MIT-style
 authors:
 	- Jesse G. Donat
 
-requires:
-	- core/1.2.4:   '*'
-
 provides: 
 	- JDZoom
 ...
 */
-var JDZoom = new Class({
+var JDZoom = (function() {
 
-	Implements: [Options],
-
-	options: {
-		'selector': 'a[rel=jdzoom]',
-		'classes': {
-			placeholder  : 'jdz_img',
-			looking_glass: 'jdz_looking_glass',
-			magnified    : 'jdz_magnified'
-		},
-		'cancel_click' : true,
-		'magnified_pos': 'float'
-	},
-
-	initialize:  function(options) { 
-		this.setOptions(options);
-		this.Images = $$(this.options.selector);
-		var that = this;
-		
-		this.Images.each(function(elm, i){
-			
-			if( elm.get('tag') == 'a' ) {
-				elm = elm.getChildren('img')[0];
+	function mergeOptions(defaults, options) {
+		var result = {};
+		for (var key in defaults) {
+			if (defaults.hasOwnProperty(key)) {
+				if (typeof defaults[key] === 'object' && defaults[key] !== null) {
+					result[key] = mergeOptions(defaults[key], (options && options[key]) ? options[key] : {});
+				} else {
+					result[key] = (options && options.hasOwnProperty(key)) ? options[key] : defaults[key];
+				}
 			}
-			
-			var elmSize = $(elm).getSize();
-			var parent_a = elm.getParent('a');
-			var lg_href = parent_a.get('href');
-			parent_a.setStyles({'position':'relative','display':'block'});
-			var rel_pos = parent_a.getPosition( elm );
-			
-			if( that.options.cancel_click ) {
-				parent_a.addEvent('click', function(e){
+		}
+		return result;
+	}
+
+	function getSize(el) {
+		return { x: el.offsetWidth, y: el.offsetHeight };
+	}
+
+	function getPosition(el) {
+		var rect = el.getBoundingClientRect();
+		return {
+			x: rect.left + window.pageXOffset,
+			y: rect.top + window.pageYOffset
+		};
+	}
+
+	function fade(el, state) {
+		if (state === 'hide' || state === 'out') {
+			el.style.opacity = '0';
+			el.style.visibility = 'hidden';
+		} else if (state === 'in') {
+			el.style.opacity = '1';
+			el.style.visibility = 'visible';
+		}
+	}
+
+	function limit(value, min, max) {
+		return Math.min(Math.max(value, min), max);
+	}
+
+	function loadImage(source, onload) {
+		var image = new Image();
+		image.onload = function() {
+			onload(image);
+		};
+		image.src = source;
+		if (image.complete) {
+			image.onload = null;
+			onload(image);
+		}
+	}
+
+	function JDZoom(options) {
+		var defaults = {
+			'selector': 'a[rel=jdzoom]',
+			'classes': {
+				placeholder  : 'jdz_img',
+				looking_glass: 'jdz_looking_glass',
+				magnified    : 'jdz_magnified'
+			},
+			'cancel_click' : true,
+			'magnified_pos': 'float'
+		};
+
+		this.options = mergeOptions(defaults, options);
+		var that = this;
+
+		var elements = document.querySelectorAll(this.options.selector);
+
+		Array.prototype.forEach.call(elements, function(elm) {
+
+			if (elm.tagName.toLowerCase() === 'a') {
+				elm = elm.querySelector('img');
+				if (!elm) return;
+			}
+
+			var elmSize = getSize(elm);
+			var parent_a = elm.closest('a');
+			if (!parent_a) return;
+			var lg_href = parent_a.getAttribute('href');
+			parent_a.style.position = 'relative';
+			parent_a.style.display = 'block';
+
+			if (that.options.cancel_click) {
+				parent_a.addEventListener('click', function(e) {
 					e.preventDefault();
 				});
 			}
-			
-			var lgimg = that.image( lg_href, { 'onload' : function(){
-				
-				var repImg = new Element('div', {'class':that.options.classes.placeholder, 'styles':{ 
-						'width' : elmSize.x, 
-						'height': elmSize.y, 
-						'top'   : rel_pos.x,
-						'left'  : rel_pos.y
-				}});						
 
-				repImg.inject( parent_a );
+			loadImage(lg_href, function(lgimg) {
 
-				var jdzl = new Element('div', {'class':that.options.classes.looking_glass} ).inject( repImg );
-				jdzlSize = jdzl.getSize();
-				jdzl.fade('hide');
+				var repImg = document.createElement('div');
+				repImg.className = that.options.classes.placeholder;
+				repImg.style.width  = elmSize.x + 'px';
+				repImg.style.height = elmSize.y + 'px';
+				repImg.style.top    = '0px';
+				repImg.style.left   = '0px';
 
-				var jdzm = new Element('div', {'class':that.options.classes.magnified, 'styles':{ 
-						'background': 'url("' + lg_href + '")',
-						'width'     : jdzlSize.x / elmSize.x * lgimg.width,
-						'height'    : jdzlSize.y / elmSize.y * lgimg.height
-				}});
-				
-				if( that.options.magnified_pos == 'fixed' ) {
-					jdzm.inject( repImg );
-					jdzm.fade('hide');
-				}else{
-					jdzm.inject( jdzl );
+				parent_a.appendChild(repImg);
+
+				var jdzl = document.createElement('div');
+				jdzl.className = that.options.classes.looking_glass;
+				repImg.appendChild(jdzl);
+				var jdzlSize = getSize(jdzl);
+				fade(jdzl, 'hide');
+
+				var jdzm = document.createElement('div');
+				jdzm.className = that.options.classes.magnified;
+				jdzm.style.background = 'url("' + lg_href + '")';
+				jdzm.style.width  = (jdzlSize.x / elmSize.x * lgimg.width)  + 'px';
+				jdzm.style.height = (jdzlSize.y / elmSize.y * lgimg.height) + 'px';
+
+				if (that.options.magnified_pos === 'fixed') {
+					repImg.appendChild(jdzm);
+					fade(jdzm, 'hide');
+				} else {
+					jdzl.appendChild(jdzm);
 				}
-				
-				var jdzmSize  = jdzm.getSize(),
-					jdzlSize  = jdzl.getSize(),
-					repImgPos = repImg.getPosition();
 
-				repImg.addEvent('mouseover', function(){
+				var jdzmSize  = getSize(jdzm),
+					repImgPos = getPosition(repImg);
 
-					var windowSize = window.getSize();
-					repImgPos = repImg.getPosition();
-					if( Math.abs(elmSize.x - ( windowSize.x - repImgPos.x )) > jdzlSize.x ){
-						jdzm.setStyle('left', '100%' );
-					}else{
-						if( that.options.magnified_pos == 'fixed' ) {
-							jdzm.setStyle('left',  0 - jdzmSize.x );
-						}else{
-							jdzm.setStyle('right', jdzmSize.x );
+				jdzlSize = getSize(jdzl);
+
+				repImg.addEventListener('mouseover', function() {
+					repImgPos = getPosition(repImg);
+					if (Math.abs(elmSize.x - (window.innerWidth - repImgPos.x)) > jdzlSize.x) {
+						jdzm.style.left = '100%';
+					} else {
+						if (that.options.magnified_pos === 'fixed') {
+							jdzm.style.left = (0 - jdzmSize.x) + 'px';
+						} else {
+							jdzm.style.right = jdzmSize.x + 'px';
 						}
 					}
 
-					jdzl.fade('in');
-					if( that.options.magnified_pos == 'fixed' ) jdzm.fade('in');
+					fade(jdzl, 'in');
+					if (that.options.magnified_pos === 'fixed') fade(jdzm, 'in');
 				});
 
-				repImg.addEvent('mouseout', function(){
-					jdzl.fade('out');
-					if( that.options.magnified_pos == 'fixed' ) jdzm.fade('out');
-				});
-				
-				repImg.fireEvent('mouseout');
-
-				repImg.addEvent('mousemove', function(ev){
-					var posY = (ev.page.y - jdzlSize.y / 2) - repImgPos.y;
-					var posX = (ev.page.x - jdzlSize.x / 2) - repImgPos.x;
-					jdzl.setStyle('top', posY.limit(0, elmSize.y - jdzlSize.y ) );
-					jdzl.setStyle('left', posX.limit(0, elmSize.x - jdzlSize.x ) );
-					jdzm.setStyle('background-position', ((posX / (elmSize.x - jdzlSize.x)) * 100).limit(0,100) + '% ' + ((posY / (elmSize.y - jdzlSize.y)) * 100).limit(0,100) + '%' );
-
+				repImg.addEventListener('mouseout', function() {
+					fade(jdzl, 'out');
+					if (that.options.magnified_pos === 'fixed') fade(jdzm, 'out');
 				});
 
-				//Internet Explorer Garbage
-				if( Browser.Engine.trident ) {
-					repImg.setStyles({ 'background':'url('+escape(elm.get('src'))+')' });
-					repImg.addEvent('mouseover', function(){ $$('select').fade('out');});
-					repImg.addEvent('mouseout',  function(){ $$('select').fade('in'); });
-				}
+				repImg.dispatchEvent(new Event('mouseout'));
 
-			}});
+				repImg.addEventListener('mousemove', function(ev) {
+					var posY = (ev.pageY - jdzlSize.y / 2) - repImgPos.y;
+					var posX = (ev.pageX - jdzlSize.x / 2) - repImgPos.x;
+					jdzl.style.top  = limit(posY, 0, elmSize.y - jdzlSize.y) + 'px';
+					jdzl.style.left = limit(posX, 0, elmSize.x - jdzlSize.x) + 'px';
+					jdzm.style.backgroundPosition =
+						limit((posX / (elmSize.x - jdzlSize.x)) * 100, 0, 100) + '% ' +
+						limit((posY / (elmSize.y - jdzlSize.y)) * 100, 0, 100) + '%';
+				});
+
+			});
 
 		});
-	},
-	
-	/** Borrowed from Mootools More - Assets **/
-	image: function(source, properties){
-		properties = $merge({
-			onload: $empty,
-			onabort: $empty,
-			onerror: $empty
-		}, properties);
-		var image = new Image();
-		var element = document.id(image) || new Element('img');
-		['load', 'abort', 'error'].each(function(name){
-			var type = 'on' + name;
-			var cap = name.capitalize();
-			if (properties['on' + cap]) properties[type] = properties['on' + cap];
-			var event = properties[type];
-			delete properties[type];
-			image[type] = function(){
-				if (!image) return;
-				if (!element.parentNode){
-					element.width = image.width;
-					element.height = image.height;
-				}
-				image = image.onload = image.onabort = image.onerror = null;
-				event.delay(1, element, element);
-				element.fireEvent(name, element, 1);
-			};
-		});
-		image.src = element.src = source;
-		if (image && image.complete) image.onload.delay(1);
-		return element.set(properties);
 	}
-	
-});
+
+	return JDZoom;
+})();
